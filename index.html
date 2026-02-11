@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Guess Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', 'Arial Black', sans-serif;
+            background: #ffd700;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,.03) 10px, rgba(0,0,0,.03) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0,0,0,.03) 10px, rgba(0,0,0,.03) 20px);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: #fff;
+            border: 6px solid #000;
+            box-shadow: 12px 12px 0 #000;
+            padding: 25px 15px;
+            max-width: 650px;
+            width: 100%;
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: #ff6b9d;
+            z-index: -1;
+            transform: rotate(-1deg);
+        }
+
+        h1 {
+            text-align: center;
+            color: #000;
+            margin-bottom: 5px;
+            font-size: 3em;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            font-weight: 900;
+            text-shadow: 4px 4px 0 #00d9ff;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #000;
+            margin-bottom: 20px;
+            font-size: 1em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .attempts-container {
+            background: #000;
+            color: #ffd700;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0 #ff6b9d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .attempts-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 215, 0, 0.1) 10px,
+                rgba(255, 215, 0, 0.1) 20px
+            );
+            pointer-events: none;
+        }
+
+        .attempts-text {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .attempts-number {
+            color: #00d9ff;
+            font-size: 1.5em;
+            text-shadow: 2px 2px 0 #ff6b9d;
+        }
+
+        .word-display {
+            text-align: center;
+            font-size: 2.5em;
+            letter-spacing: 8px;
+            margin: 25px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            color: #000;
+            min-height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ffd700;
+            border: 5px solid #000;
+            padding: 15px;
+            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.2);
+        }
+
+        .used-letters {
+            margin: 20px 0;
+            min-height: 50px;
+            border: 4px dashed #000;
+            padding: 15px;
+            background: #fff;
+        }
+
+        .used-letters-title {
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 2px;
+        }
+
+        .letter-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .letter-badge {
+            background: #000;
+            color: #ffd700;
+            padding: 8px 14px;
+            border: 3px solid #000;
+            font-weight: 900;
+            font-size: 1.1em;
+            box-shadow: 3px 3px 0 #ff6b9d;
+            transform: rotate(-2deg);
+        }
+
+        .letter-badge:nth-child(even) {
+            transform: rotate(2deg);
+            box-shadow: 3px 3px 0 #00d9ff;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 6px;
+            margin: 25px 0;
+        }
+
+        .key {
+            background: #00d9ff;
+            color: #000;
+            border: 4px solid #000;
+            padding: 12px 8px;
+            font-size: 1.1em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        .key:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #000;
+        }
+
+        .key:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .key:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .message {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 900;
+            margin: 15px 0;
+            min-height: 35px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .message.success {
+            color: #00d9ff;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .message.error {
+            color: #ff6b9d;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .new-game-btn {
+            background: #ff6b9d;
+            color: #000;
+            border: 5px solid #000;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 6px 6px 0 #000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .new-game-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 #000;
+        }
+
+        .new-game-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+
+        .shake {
+            animation: shake 0.3s ease;
+        }
+
+        .pop {
+            animation: pop 0.4s ease;
+        }
+
+        @media (max-width: 650px) {
+            .game-container {
+                padding: 20px 10px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .word-display {
+                font-size: 1.8em;
+                letter-spacing: 5px;
+            }
+
+            .key {
+                padding: 10px 4px;
+                font-size: 0.9em;
+            }
+
+            .keyboard {
+                grid-template-columns: repeat(13, 1fr);
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>WORD GUESS</h1>
+        <p class="subtitle">Type or Click to Guess!</p>
+
+        <div class="attempts-container">
+            <div class="attempts-text">
+                GUESSES LEFT: <span class="attempts-number" id="attemptsNumber">6</span>
+            </div>
+        </div>
+
+        <div class="word-display" id="wordDisplay">_ _ _ _ _</div>
+
+        <div class="used-letters">
+            <div class="used-letters-title">🔤 Used Letters</div>
+            <div class="letter-badges" id="usedLetters"></div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="keyboard" id="keyboard"></div>
+
+        <button class="new-game-btn" id="newGameBtn" onclick="initGame()">↻ NEW GAME</button>
+    </div>
+
+    <script>
+        const words = [
+            // 7 letters
+            "abandon", "absence", "academy", "account", "achieve", "address", "advance", "advice", "airport", "alcohol",
+            "ancient", "another", "anxiety", "anywhere", "approve", "arrange", "article", "athlete", "attempt", "attract",
+            "average", "balance", "battery", "believe", "benefit", "between", "billion", "biology", "blanket", "brother",
+            "building", "cabinet", "camera", "capital", "captain", "capture", "careful", "century", "certain", "challenge",
+            "chamber", "channel", "chapter", "charity", "chicken", "climate", "clothes", "college", "combine", "comfort",
+            "command", "comment", "company", "compare", "complex", "concept", "concern", "conduct", "confirm", "connect",
+            "console", "contact", "contain", "content", "contest", "context", "control", "convert", "correct", "council",
+            "counter", "country", "courage", "creature", "crystal", "culture", "current", "curtain", "customer", "dancing",
+            "danger", "daughter", "daytime", "decline", "default", "defense", "deliver", "density", "deposit", "desktop",
+            "destroy", "develop", "diamond", "digital", "disease", "display", "distant", "district", "dolphin", "domain",
+            
+            // 8 letters
+            "absolute", "abstract", "academic", "accident", "activity", "addition", "adequate", "adjacent", "announce",
+            "approach", "argument", "audience", "baseball", "bathroom", "birthday", "boundary", "breakfast", "building",
+            "business", "calendar", "campaign", "capacity", "category", "ceremony", "champion", "character", "chemical",
+            "children", "chocolate", "circular", "civilian", "classify", "clothing", "collapse", "colonial", "colorful",
+            "combined", "commerce", "community", "complain", "complete", "computer", "conclude", "concrete", "condition",
+            "conference", "conflict", "congress", "consider", "constant", "consumer", "continue", "contract", "contrast",
+            "convince", "corridor", "coverage", "creative", "creature", "critical", "crossing", "cultural", "currency",
+            "customer", "database", "daughter", "deadline", "decision", "decrease", "delegate", "delicate", "delivery",
+            "democracy", "democrat", "describe", "designer", "detailed", "diabetes", "dialogue", "diameter", "differen",
+            "digital", "dinosaur", "director", "disaster", "discipline", "discourse", "discover", "discuss", "disorder",
+            
+            // 9 letters
+            "abandoned", "abolition", "abortion", "abundance", "acceptable", "accessory", "accompany", "according",
+            "accordion", "accountant", "accurately", "achieving", "acid", "acknowledge", "acquiring", "активное",
+            "addiction", "adequate", "adjusting", "admission", "admitting", "advancing", "adventure", "advertise",
+            "aesthetic", "afternoon", "agreement", "algorithm", "alongside", "alternative", "ambitious", "amendment",
+            "amusement", "analyzing", "ancestors", "animation", "announced", "answering", "antarctic", "anxiously",
+            "apartment", "apparatus", "appealing", "appearing", "appointed", "appraisal", "appraised", "apprentice",
+            "arbitrary", "architect", "arrogance", "ascending", "assaulted", "assembled", "asserting", "assessing",
+            "assigning", "assistant", "associate", "assurance", "astronomy", "athletics", "attacking", "attaining",
+            "attempted", "attending", "attention", "attribute", "audiences", "authentic", "authority", "automatic",
+            "available", "averaging", "awakening", "awareness", "bacterial", "balancing", "bandwidth", "bargaining",
+            
+            // 10 letters
+            "absolutely", "absorption", "acceptable", "accessible", "accidental", "accomplish", "accordance", "accounting",
+            "accumulate", "accurately", "achieving", "additional", "addressing", "adequately", "adjustment", "admiration",
+            "admittedly", "adolescent", "advantaged", "adventures", "advertised", "affordable", "afterwards", "aggression",
+            "aggressive", "algorithms", "allegation", "allocation", "altogether", "ambassador", "ammunition", "analytical",
+            "ancestors", "answering", "antarctica", "antibodies", "antioxidant", "apartments", "apparently", "appearance",
+            "appendices", "appetizers", "appleauce", "applicable", "application", "appointed", "appreciate", "apprentice",
+            "approaches", "appropriat", "approximate", "architects", "aristocrat", "arithmetic", "arranging", "arrogantly",
+            "artificial", "aspiration", "assemblies", "assessment", "assignment", "assistance", "associated", "assumption",
+            "astonished", "astronomer", "atmosphere", "attachment", "attendance", "attractive", "attributes", "auditorium",
+            "australian", "authorized", "automobile", "autonomous", "background", "basketball", "battlefield", "beginnings"
+        ];
+        let currentWord = "";
+        let guessedWord = [];
+        let attemptsLeft = 6;
+        let usedLetters = new Set();
+        let gameActive = true;
+
+        function initGame() {
+            // Pick random word
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            guessedWord = Array(currentWord.length).fill('_');
+            attemptsLeft = 6;
+            usedLetters = new Set();
+            gameActive = true;
+
+            // Update display
+            updateWordDisplay();
+            updateAttempts();
+            updateUsedLetters();
+            updateMessage("", "");
+            createKeyboard();
+
+            console.log("Word:", currentWord); // For testing
+        }
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+            for (let letter of alphabet) {
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.onclick = () => guessLetter(letter);
+                key.id = `key-${letter}`;
+                keyboard.appendChild(key);
+            }
+        }
+
+        function guessLetter(letter) {
+            if (!gameActive || usedLetters.has(letter)) {
+                return;
+            }
+
+            usedLetters.add(letter);
+            const keyElement = document.getElementById(`key-${letter}`);
+            if (keyElement) {
+                keyElement.disabled = true;
+            }
+
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                for (let i = 0; i < currentWord.length; i++) {
+                    if (currentWord[i] === letter) {
+                        guessedWord[i] = letter;
+                    }
+                }
+                updateWordDisplay();
+                updateMessage("NICE! 🎯", "success");
+
+                // Check if won
+                if (!guessedWord.includes('_')) {
+                    gameActive = false;
+                    updateMessage("🎉 YOU WIN! THE WORD: " + currentWord.toUpperCase(), "success");
+                    disableAllKeys();
+                    document.getElementById('wordDisplay').classList.add('pop');
+                }
+            } else {
+                // Wrong guess
+                attemptsLeft--;
+                updateAttempts();
+                updateMessage(`NOPE! ${attemptsLeft} LEFT`, "error");
+                document.querySelector('.attempts-container').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.attempts-container').classList.remove('shake');
+                }, 300);
+
+                if (attemptsLeft === 0) {
+                    gameActive = false;
+                    updateMessage(`💥 GAME OVER! WORD WAS: ${currentWord.toUpperCase()}`, "error");
+                    disableAllKeys();
+                    revealWord();
+                }
+            }
+
+            updateUsedLetters();
+        }
+
+        function updateWordDisplay() {
+            const display = guessedWord.join(' ');
+            document.getElementById('wordDisplay').textContent = display;
+            document.getElementById('wordDisplay').classList.add('pop');
+            setTimeout(() => {
+                document.getElementById('wordDisplay').classList.remove('pop');
+            }, 400);
+        }
+
+        function updateAttempts() {
+            document.getElementById('attemptsNumber').textContent = attemptsLeft;
+        }
+
+        function updateUsedLetters() {
+            const container = document.getElementById('usedLetters');
+            container.innerHTML = '';
+            
+            const sortedLetters = Array.from(usedLetters).sort();
+            sortedLetters.forEach(letter => {
+                const badge = document.createElement('span');
+                badge.className = 'letter-badge';
+                badge.textContent = letter.toUpperCase();
+                container.appendChild(badge);
+            });
+        }
+
+        function updateMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+        }
+
+        function disableAllKeys() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => key.disabled = true);
+        }
+
+        function revealWord() {
+            guessedWord = currentWord.split('');
+            updateWordDisplay();
+        }
+
+        // Keyboard input support
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key >= 'a' && key <= 'z') {
+                guessLetter(key);
+            }
+        });
+
+        // Initialize game on load
+        initGame();
+    </script>
+</body>
+</html>
